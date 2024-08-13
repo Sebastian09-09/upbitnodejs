@@ -33,9 +33,9 @@ async function postToDiscordWebhook(title,timeStamp) {
 
 const announcementHandler = async (response) => {
     const url = response.url();
+    const now = new Date();
+    console.log(url, now);
     if (url.includes('announcement')) {
-        const now = new Date();
-        console.log(url)
         try{
             const responseBody = await response.json();
             if (responseBody.data.notices){
