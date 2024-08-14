@@ -31,10 +31,41 @@ async function postToDiscordWebhook(title,timeStamp) {
     } catch {}
 }
 
+async function logToDiscordWebhook(title,desc,url=null) {
+    try {
+        const response = await fetch(webhookurl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username: "Upbit Announcements",
+                embeds: [{
+                    title: title ,
+                    url: url,
+                    description: desc 
+                }] 
+            }),
+        });
+    } catch {}
+}
+
 const announcementHandler = async (response) => {
     const url = response.url();
     const now = new Date();
-    await fs.writeFile('endpoint.txt', url+'|'+now);
+
+    await fs.appendFile('endpoint.txt', url+'|'+now+'\n');
+    try{
+        const responseBody = await response.json();
+        const responseBodyText = JSON.stringify(responseBody, null, 2);
+        logToDiscordWebhook('Got Json', responseBodyText, url);
+        if (responseBodyText.includes('2024-08-14')) {
+            logToDiscordWebhook('Got Json with 2024-08-14', responseBodyText, url);
+            await fs.appendFile('specialurl.txt', url+'|'+now+'\n'+responseBodyText+'\n\n');
+        }
+
+    }catch{}
+
     if (url.includes('announcement')) {
         try{
             const responseBody = await response.json();
@@ -42,6 +73,10 @@ const announcementHandler = async (response) => {
                 postToDiscordWebhook(responseBody.data.notices[0].title , now );
             }else if (responseBody.data.title){
                 postToDiscordWebhook(responseBody.data.title , now );
+            }else {
+                const responseBodyText = JSON.stringify(responseBody, null, 2);
+                logToDiscordWebhook('Got URL with announcement', responseBodyText, url);
+                await fs.appendFile('else.txt', url+'|'+now+'\n'+responseBodyText+'\n\n');
             }
         }catch{}
     }
@@ -67,5 +102,6 @@ const announcementHandler = async (response) => {
 
     await page.on('response', announcementHandler);
     
-    console.log('Monitoring Upbit Announcements!')
+    console.log('Monitoring Upbit Announcements!');
+    logToDiscordWebhook('Monitoring Upbit Announcements!', 'Bot it Up!');
 })();
