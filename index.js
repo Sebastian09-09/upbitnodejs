@@ -31,7 +31,7 @@ async function postToDiscordWebhook(title,timeStamp) {
     } catch {}
 }
 
-async function logToDiscordWebhook(title,desc,url=null) {
+async function logToDiscordWebhook(title,desc,url=null,content=null) {
     try {
         const response = await fetch(webhookurl, {
             method: 'POST',
@@ -40,6 +40,7 @@ async function logToDiscordWebhook(title,desc,url=null) {
             },
             body: JSON.stringify({
                 username: "Upbit Announcements",
+                content: content,
                 embeds: [{
                     title: title ,
                     url: url,
@@ -59,8 +60,8 @@ const announcementHandler = async (response) => {
         const responseBody = await response.json();
         const responseBodyText = JSON.stringify(responseBody, null, 2);
         logToDiscordWebhook('Got Json', responseBodyText, url);
-        if (responseBodyText.includes('2024-08-14')) {
-            logToDiscordWebhook('Got Json with 2024-08-14', responseBodyText, url);
+        if (responseBodyText.includes('2024-08-15')) {
+            logToDiscordWebhook('Got Json with 2024-08-15', responseBodyText, url , "<@790921244651552769>");
             await fs.appendFile('specialurl.txt', url+'|'+now+'\n'+responseBodyText+'\n\n');
         }
 
@@ -75,7 +76,7 @@ const announcementHandler = async (response) => {
                 postToDiscordWebhook(responseBody.data.title , now );
             }else {
                 const responseBodyText = JSON.stringify(responseBody, null, 2);
-                logToDiscordWebhook('Got URL with announcement', responseBodyText, url);
+                logToDiscordWebhook('Got URL with announcement, but could not parse', responseBodyText, url , "<@790921244651552769>");
                 await fs.appendFile('else.txt', url+'|'+now+'\n'+responseBodyText+'\n\n');
             }
         }catch{}
