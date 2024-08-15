@@ -60,8 +60,8 @@ const announcementHandler = async (response) => {
         const responseBody = await response.json();
         const responseBodyText = JSON.stringify(responseBody, null, 2);
         logToDiscordWebhook('Got Json', responseBodyText, url);
-        if (responseBodyText.includes('2024-08-15')) {
-            logToDiscordWebhook('Got Json with 2024-08-15', responseBodyText, url , "<@790921244651552769>");
+        if (responseBodyText.includes('2024-08-16')) {
+            logToDiscordWebhook('Got Json with 2024-08-16', responseBodyText, url , "<@790921244651552769>");
             await fs.appendFile('specialurl.txt', url+'|'+now+'\n'+responseBodyText+'\n\n');
         }
 
