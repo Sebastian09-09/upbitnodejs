@@ -34,7 +34,7 @@ def pushToDiscord(title,time):
         "username": "Upbit Announcements",
         "embeds": [{
             "title": title,
-            "color": 13709,
+            "color": 44444,
             "footer": {
                 "text": time
             }
@@ -66,6 +66,7 @@ def sendRequest(session,proxy,wait):
     print(f'Response : {res.status_code}\nDelay : {recieved-sent}\nFound : {recieved}')
 
     if res.status_code != 200:
+        pushToDiscord('Status Code not 200',res.status_code)
         return 
     
     title = res.json()['data']['notices'][0]['title']
