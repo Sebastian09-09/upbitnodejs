@@ -126,7 +126,9 @@ if __name__ == '__main__':
                 futures = executor.map_async(partial_compute, sleepTimes)
                 
                 time.sleep(1)
-                print(f'Going to Next Proxy\nTime Taken {datetime.now()-a}: ')
+                print(f'Going to Next Proxy\nTime Taken : {datetime.now()-a}')
+                if _ % 50 == 0:
+                    Thread(target=pushToDiscord, args=('50 Proxies Done', f'Time Taken for Last Proxy : {datetime.now()-a}')).start()
             
             
         except Exception as e:
