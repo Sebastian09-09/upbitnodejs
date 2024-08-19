@@ -98,12 +98,17 @@ def testip(session,proxy):
 
 
 while True:
-    for _,proxy in enumerate(proxylist):
-        print('starting')
-        a=datetime.now()
-        for i in range(10):
-            t=Thread(target=sendRequest, args=(session,proxy))
-            t.start()
-            time.sleep(0.1)
-            print(f'proxy {_} fired run {i}')
-        print(f'Going to Next Proxy\nTime Taken {datetime.now()-a}: ')
+    try:
+        for _,proxy in enumerate(proxylist):
+            a=datetime.now()
+            for i in range(10):
+                t=Thread(target=sendRequest, args=(session,proxy))
+                t.start()
+                time.sleep(0.1)
+                print(f'proxy {_} fired run {i}')
+
+            print(f'Going to Next Proxy\nTime Taken {datetime.now()-a}: ')
+
+    except Exception as e:
+        sendRequest("Error", e)
+        break 

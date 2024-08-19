@@ -2,6 +2,7 @@ import requests
 import time 
 from datetime import datetime 
 import multiprocessing
+from concurrent.futures import ProcessPoolExecutor
 import json 
 from functools import partial
 from threading import Thread
@@ -108,12 +109,26 @@ def testip(session,proxy,wait):
 sleepTimes = [0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
 if __name__ == '__main__':
     while True:
-        for _,proxy in enumerate(proxylist):
-            a=datetime.now()
+        try:
+            for _,proxy in enumerate(proxylist):
+                a=datetime.now()
 
-            for wait in sleepTimes:
-                p = multiprocessing.Process(target=sendRequest, args=(session,proxy,wait))
-                p.start()
+                partial_compute = partial(sendRequest, session, proxy)
+                #with multiprocessing.Pool() as pool:
+                #    results = pool.map_async(partial_compute, sleepTimes)     
+                #    results.get(timeout=2)
+
+                #for wait in sleepTimes:
+                #    p = multiprocessing.Process(target=sendRequest, args=(session,proxy,wait))
+                #    p.start()
+
+                executor = ProcessPoolExecutor()
+                futures = [executor.submit(partial_compute, num) for num in sleepTimes]
+                
+                time.sleep(1)
+                print(f'Going to Next Proxy\nTime Taken {datetime.now()-a}: ')
             
-            time.sleep(1)
-            print(f'Going to Next Proxy\nTime Taken {datetime.now()-a}: ')
+            
+        except Exception as e:
+            sendRequest('Error',e)
+            break 

@@ -5,4 +5,4 @@ COPY . /app
 
 RUN pip install requests
 
-CMD ["sh", "-c", "python3 /app/mul.py -f"]
+CMD ["sh", "-c", "python3 /app/mul.py"]
