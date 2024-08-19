@@ -123,7 +123,7 @@ if __name__ == '__main__':
                 #    p.start()
 
                 executor = ProcessPoolExecutor()
-                futures = [executor.submit(partial_compute, num) for num in sleepTimes]
+                futures = executor.map(partial_compute, sleepTimes)
                 
                 time.sleep(1)
                 print(f'Going to Next Proxy\nTime Taken {datetime.now()-a}: ')
