@@ -106,7 +106,7 @@ def testip(session,proxy,wait):
     print(f'Response : {res.status_code}\nDelay : {recieved-sent}\nFound : {recieved}')
 
 
-sleepTimes = [0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
+sleepTimes = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
 if __name__ == '__main__':
     while True:
         try:
@@ -122,8 +122,8 @@ if __name__ == '__main__':
                 #    p = multiprocessing.Process(target=sendRequest, args=(session,proxy,wait))
                 #    p.start()
 
-                executor = ProcessPoolExecutor()
-                futures = executor.map(partial_compute, sleepTimes)
+                executor = multiprocessing.Pool()
+                futures = executor.map_async(partial_compute, sleepTimes)
                 
                 time.sleep(1)
                 print(f'Going to Next Proxy\nTime Taken {datetime.now()-a}: ')
