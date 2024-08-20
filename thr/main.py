@@ -44,6 +44,7 @@ def pushToDiscord(title,time):
 
 
 def sendRequest(session,proxy,category):
+    print(proxy, category)
     headers = {
         "Accept-Encoding": "gzip",
         "Cache-Control": "no-cache, no-store, must-revalidate",
@@ -113,7 +114,7 @@ while True:
                 if len(proxiestouse) == 8:
                     break 
 
-            if counter >= 100:
+            if counter >= 94:
                 counter = 0
 
         for i in range(2):
