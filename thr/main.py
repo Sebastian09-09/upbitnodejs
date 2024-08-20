@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor
 import random 
 import requests 
 import time 
@@ -41,13 +42,8 @@ def pushToDiscord(title,time):
     }
     requests.post(webhookurl,headers=headers,json=payload)
 
-proxyload = {}
-for i in proxylist:
-    proxyload[i] = 0
 
 def sendRequest(session,proxy,category):
-    global proxyload 
-
     headers = {
         "Accept-Encoding": "gzip",
         "Cache-Control": "no-cache, no-store, must-revalidate",
@@ -80,8 +76,6 @@ def sendRequest(session,proxy,category):
     res=session.get(f'https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category={category}', headers=headers)
     recieved=datetime.now()
     
-    proxyload[proxy] -= 1
-
     sentwms = sent.strftime('%Y-%m-%d %H:%M:%S') + f'.{sent.strftime('%f')[:3] }'
     recievedwms = recieved.strftime('%Y-%m-%d %H:%M:%S') + f'.{recieved.strftime('%f')[:3] }'
     
@@ -105,31 +99,55 @@ def sendRequest(session,proxy,category):
 
 
 categories = ['notice','trade','dtw','maintenance','digital_asset','nft','staking','event']
-def getRandomProxy(alreadyinuse):
 
-    a = random.choice(proxylist)
-    while a in alreadyinuse or proxyload[a] > 10:
-        a = random.choice(proxylist)
-    
-    
-    proxyload[a] += 1
-
-    return a 
+counter = 0
 
 while True:
     try:
-        alreadyinuse = []
         a = datetime.now()
-        for i in range(5):
-            for cat in categories:
-                proxy = getRandomProxy(alreadyinuse)
-                alreadyinuse.append(proxy)
-                #print(proxy,cat)
+        proxiestouse = []
+        while len(proxiestouse) != 8:
+            for i in proxylist[counter:]:
+                proxiestouse.append(i)
+                counter += 1
+                if len(proxiestouse) == 8:
+                    break 
+                if counter == 100:
+                    counter = 0
+                    break
+        
+        for i in range(2):
+
+            for index in range(8):
+                cat = categories[index]
+                proxy = proxiestouse[index]
+
                 t=Thread(target=sendRequest, args=(session,proxy,cat))
                 t.start()
 
-            time.sleep(0.2)
+            time.sleep(0.4)
+
         print(f'Going to Next\nTime Taken : {datetime.now()-a}')
+
+    except Exception as e:
+        pushToDiscord("Error", e)
+        break 
+
+
+#    print(proxiestouse)
+                
+        #alreadyinuse = []
+        #a = datetime.now()
+        #for i in range(5):
+        #    for cat in categories:
+        #        proxy = getRandomProxy(alreadyinuse)
+        #        alreadyinuse.append(proxy)
+        #        #print(proxy,cat)
+        #        t=Thread(target=sendRequest, args=(session,proxy,cat))
+        #        t.start()
+
+        #    time.sleep(0.2)
+        #print(f'Going to Next\nTime Taken : {datetime.now()-a}')
 
         #for _,proxy in enumerate(proxylist):
         #    a=datetime.now()
@@ -143,6 +161,6 @@ while True:
             #if _ % 50 == 0:
             #    Thread(target=pushToDiscord, args=('50 Proxies Done', f'Time Taken for Last Proxy : {datetime.now()-a}')).start()
 
-    except Exception as e:
-        sendRequest("Error", e)
-        break 
+    #except Exception as e:
+    #    sendRequest("Error", e)
+    #    break 
