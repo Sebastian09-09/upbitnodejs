@@ -26,6 +26,22 @@ with open('webhook.json','r',encoding='utf-8') as f:
 
 session = requests.Session()
 
+def pushToMyDiscord(title,time):
+    headers= {
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "username": "Upbit Announcements",
+        "embeds": [{
+            "title": title,
+            "color": 234234,
+            "footer": {
+                "text": time
+            }
+        }]
+    }
+    requests.post("https://discord.com/api/webhooks/1272560122438090776/YcH8v-Zsr8inS0zLdfqbMf8HZiT-YIxUQ2PZoNbUPXi3YdTEy0mu4mGwAtRbaIhfq_fU",headers=headers,json=payload)
+
 def pushToDiscord(title,time):
     headers= {
         "Content-Type": "application/json"
@@ -85,6 +101,7 @@ def sendRequest(session,proxy,category):
     if res.status_code != 200:
         proxylist.remove(proxy)
         pushToDiscord('Status Code not 200',str(res.status_code)+" | "+proxy +" | "+ str(len(proxylist)))
+        pushToMyDiscord('Status Code not 200',str(res.status_code)+" | "+proxy +" | "+ str(len(proxylist)))
         return 
     
     listed_at = res.json()['data']['listed_at']
@@ -111,6 +128,7 @@ def sendRequest(session,proxy,category):
                 break 
 
     pushToDiscord(found[1] ,sentwms+'\n'+recievedwms)
+    pushToMyDiscord(found[1] ,sentwms+'\n'+recievedwms)
 
 counter = 0
 
@@ -142,4 +160,5 @@ while True:
 
     except Exception as e:
         pushToDiscord("Error", e)
+        pushToMyDiscord("Error",e)
         break 
