@@ -44,6 +44,7 @@ def pushToDiscord(title,time):
 
 
 def sendRequest(session,proxy,category):
+    global proxylist 
     headers = {
         "Accept-Encoding": "gzip",
         "Cache-Control": "no-cache, no-store, must-revalidate",
@@ -82,7 +83,8 @@ def sendRequest(session,proxy,category):
     #print(f'Response : {res.status_code}\nDelay : {recieved-sent}\nFound : {recieved}')
 
     if res.status_code != 200:
-        pushToDiscord('Status Code not 200',str(res.status_code)+" | "+proxy)
+        proxylist.remove(proxy)
+        pushToDiscord('Status Code not 200',str(res.status_code)+" | "+proxy +" | "+ str(len(proxylist)))
         return 
     
     listed_at = res.json()['data']['listed_at']
@@ -99,57 +101,45 @@ def sendRequest(session,proxy,category):
     for dat in nres.json()['data']['notices']:
         if dat['listed_at'] == listed_at:
             found = [True, dat['title'] ]
+            break 
 
     while not found[0] and nres.status_code == 200:
         nres=session.get(f'https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=2&category=all', headers=headers)
         for dat in nres.json()['data']['notices']:
             if dat['listed_at'] == listed_at:
                 found = [True, dat['title'] ]
+                break 
 
     pushToDiscord(found[1] ,sentwms+'\n'+recievedwms)
 
+counter = 0
+
 while True:
     try:
-        for _,proxy in enumerate(proxylist):
-            a=datetime.now()
-            for i in range(2):
-                t = Thread(target=sendRequest , args=(session,proxy,'latest'))
-                t.start()
-                time.sleep(0.5)
-            print(f'Going to Next\nTime Taken : {datetime.now()-a}')
+        if len(proxylist) < 2:
+            raise "Proxies Expired"
+
+        a = datetime.now()
+        proxiestouse = []
+        while len(proxiestouse) != 2:
+            for i in proxylist[counter:]:
+                proxiestouse.append(i)
+                counter += 1
+                if len(proxiestouse) == 2:
+                    break 
+
+            if counter >= len(proxylist):
+                counter = 0
+
+        for index in range(2):
+            proxy = proxiestouse[index]
+            t=Thread(target=sendRequest, args=(session,proxy,'latest'))
+            t.start()    
+            time.sleep(0.5)
+
+
+        print(f'Going to Next\nTime Taken : {datetime.now()-a}')
 
     except Exception as e:
         pushToDiscord("Error", e)
         break 
-
-
-#    print(proxiestouse)
-                
-        #alreadyinuse = []
-        #a = datetime.now()
-        #for i in range(5):
-        #    for cat in categories:
-        #        proxy = getRandomProxy(alreadyinuse)
-        #        alreadyinuse.append(proxy)
-        #        #print(proxy,cat)
-        #        t=Thread(target=sendRequest, args=(session,proxy,cat))
-        #        t.start()
-
-        #    time.sleep(0.2)
-        #print(f'Going to Next\nTime Taken : {datetime.now()-a}')
-
-        #for _,proxy in enumerate(proxylist):
-        #    a=datetime.now()
-        #    for i in range(5):
-        #        t=Thread(target=sendRequest, args=(session,proxy))
-        #        t.start()
-        #        time.sleep(0.2)
-        #        print(f'proxy {_} fired run {i}')
-
-            #print(f'Going to Next Proxy\nTime Taken {datetime.now()-a}: ')
-            #if _ % 50 == 0:
-            #    Thread(target=pushToDiscord, args=('50 Proxies Done', f'Time Taken for Last Proxy : {datetime.now()-a}')).start()
-
-    #except Exception as e:
-    #    sendRequest("Error", e)
-    #    break 
