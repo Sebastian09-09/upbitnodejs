@@ -82,7 +82,7 @@ def sendRequest(session,proxy,category):
     #print(f'Response : {res.status_code}\nDelay : {recieved-sent}\nFound : {recieved}')
 
     if res.status_code != 200:
-        pushToDiscord('Status Code not 200',res.status_code)
+        pushToDiscord('Status Code not 200',str(res.status_code)+" | "+proxy)
         return 
     
     title = res.json()['data']['notices'][0]['title']
@@ -112,10 +112,10 @@ while True:
                 counter += 1
                 if len(proxiestouse) == 8:
                     break 
-                if counter == 100:
-                    counter = 0
-                    break
-        
+
+            if counter >= 100:
+                counter = 0
+
         for i in range(2):
 
             for index in range(8):
