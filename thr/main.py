@@ -80,10 +80,7 @@ def sendRequest(session,proxy,category):
     res=session.get(f'https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category={category}', headers=headers)
     recieved=datetime.now()
     
-    try:
-        proxyload[proxy] -= 1
-    except:
-        pass 
+    proxyload[proxy] -= 1
 
     sentwms = sent.strftime('%Y-%m-%d %H:%M:%S') + f'.{sent.strftime('%f')[:3] }'
     recievedwms = recieved.strftime('%Y-%m-%d %H:%M:%S') + f'.{recieved.strftime('%f')[:3] }'
@@ -114,10 +111,8 @@ def getRandomProxy(alreadyinuse):
     while a in alreadyinuse or proxyload[a] > 10:
         a = random.choice(proxylist)
     
-    try:
-        proxyload[a] += 1
-    except:
-        pass 
+    
+    proxyload[a] += 1
 
     return a 
 
