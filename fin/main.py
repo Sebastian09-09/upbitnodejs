@@ -1,8 +1,8 @@
-from apscheduler.schedulers.background import BackgroundScheduler
 import time 
 import requests 
 from datetime import datetime 
 import json 
+from threading import Thread 
 
 def loadLast(category):
     with open(f'{category}.json','r',encoding='utf-8') as f:
@@ -59,10 +59,15 @@ def pushToDiscord(title,time,url):
     }
     requests.post(webhookurl,headers=headers,json=payload)
 
+
+latest = loadLast("latest")
+
+
 #https://api-manager.upbit.com/api/v1/announcements/latest?os=web
 #https://api-manager.upbit.com/api/v1/announcements/latest.js?os=web
 def sendRequestLatest(session,category,url):
-    global proxylist , proxylistused
+    print(datetime.now(),url)
+    global proxylist , proxylistused , latest 
 
     if len(proxylist) == 0:
         proxylist = loadProxies()
@@ -123,13 +128,13 @@ def sendRequestLatest(session,category,url):
         return 
     
     listed_at = res.json()['data']['listed_at']
-
-    latest = loadLast(category)
     
     if listed_at == latest['listed_at']:
         return 
     
-    writeLast({'listed_at': listed_at} , category)
+    latest = {'listed_at': listed_at}
+
+    writeLast(latest , category)
 
     found = [False, '']
     nres=session.get(f'https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all', headers=headers)
@@ -154,7 +159,8 @@ def sendRequestLatest(session,category,url):
 #https://api-manager.upbit.com/api/v1/announcements.js/?os=web&page=1&per_page=1&category=all
 #https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all
 def sendRequest(session,category,url):
-    global proxylist , proxylistused
+    print(datetime.now(),url)
+    global proxylist , proxylistused , latest
 
     if len(proxylist) == 0:
         proxylist = loadProxies()
@@ -214,13 +220,13 @@ def sendRequest(session,category,url):
         return 
     
     listed_at = res.json()['data']['notices'][0]['listed_at']
-
-    latest = loadLast(category)
     
     if listed_at == latest['listed_at']:
         return 
     
-    writeLast({'listed_at': listed_at} , category)
+    latest = {'listed_at': listed_at}
+    
+    writeLast(latest , category)
 
     pushToDiscord(res.json()['data']['notices'][0]['title'],sentwms+'\n'+recievedwms, url)
     pushToMyDiscord(res.json()['data']['notices'][0]['title'],sentwms+'\n'+recievedwms, url)
@@ -231,30 +237,34 @@ def sendRequest(session,category,url):
 
 
 # Create an instance of BackgroundScheduler
-scheduler = BackgroundScheduler()
+#scheduler = BackgroundScheduler()
 
 # Add a job to the scheduler
-scheduler.add_job(sendRequestLatest, 'interval', seconds=0.5,max_instances=10 , misfire_grace_time=10 , args=(session,'latest','https://api-manager.upbit.com/api/v1/announcements/latest.js?os=web'))
-scheduler.add_job(sendRequestLatest, 'interval', seconds=0.5,max_instances=10 , misfire_grace_time=10 , args=(session,'latest','https://api-manager.upbit.com/api/v1/announcements/latest?os=web'))
-scheduler.add_job(sendRequest, 'interval', seconds=0.5,max_instances=10 , misfire_grace_time=10 , args=(session,'latest','https://api-manager.upbit.com/api/v1/announcements.js?os=web&page=1&per_page=1&category=all'))
-scheduler.add_job(sendRequest, 'interval', seconds=0.5,max_instances=10 , misfire_grace_time=10 , args=(session,'latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all'))
-scheduler.add_job(sendRequest, 'interval', seconds=0.5,max_instances=10 , misfire_grace_time=10 , args=(session,'latest','https://api-manager.upbit.com/api/v1/announcements/search.js?search=ta&page=1&per_page=1&category=all&os=web'))
-scheduler.add_job(sendRequest, 'interval', seconds=0.5,max_instances=10 , misfire_grace_time=10 , args=(session,'latest','https://api-manager.upbit.com/api/v1/announcements/search?search=ta&page=1&per_page=1&category=all&os=web'))
+#scheduler.add_job(sendRequestLatest, 'interval', seconds=0.5,max_instances=10 , misfire_grace_time=10 , args=(session,'latest','https://api-manager.upbit.com/api/v1/announcements/latest.js?os=web'))
+#scheduler.add_job(sendRequestLatest, 'interval', seconds=0.5,max_instances=10 , misfire_grace_time=10 , args=(session,'latest','https://api-manager.upbit.com/api/v1/announcements/latest?os=web'))
+#scheduler.add_job(sendRequest, 'interval', seconds=0.5,max_instances=10 , misfire_grace_time=10 , args=(session,'latest','https://api-manager.upbit.com/api/v1/announcements.js?os=web&page=1&per_page=1&category=all'))
+#scheduler.add_job(sendRequest, 'interval', seconds=0.5,max_instances=10 , misfire_grace_time=10 , args=(session,'latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all'))
+#scheduler.add_job(sendRequest, 'interval', seconds=0.5,max_instances=10 , misfire_grace_time=10 , args=(session,'latest','https://api-manager.upbit.com/api/v1/announcements/search.js?search=ta&page=1&per_page=1&category=all&os=web'))
+#scheduler.add_job(sendRequest, 'interval', seconds=0.5,max_instances=10 , misfire_grace_time=10 , args=(session,'latest','https://api-manager.upbit.com/api/v1/announcements/search?search=ta&page=1&per_page=1&category=all&os=web'))
 
 
 
 # Start the scheduler
-scheduler.start()
+#scheduler.start()
 
 
 # Keep the script running
-try:
-    while True:
-        time.sleep(1)
+while True:
+    try:
+        Thread(target=sendRequestLatest, args=(session,'latest','https://api-manager.upbit.com/api/v1/announcements/latest.js?os=web')).start()
+        Thread(target=sendRequestLatest, args=(session,'latest','https://api-manager.upbit.com/api/v1/announcements/latest?os=web')).start()
+        Thread(target=sendRequest, args=(session,'latest','https://api-manager.upbit.com/api/v1/announcements.js?os=web&page=1&per_page=1&category=all')).start()
+        Thread(target=sendRequest, args=(session,'latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all')).start()
+        Thread(target=sendRequest, args=(session,'latest','https://api-manager.upbit.com/api/v1/announcements/search.js?search=ta&page=1&per_page=1&category=all&os=web')).start()
+        Thread(target=sendRequest, args=(session,'latest','https://api-manager.upbit.com/api/v1/announcements/search?search=ta&page=1&per_page=1&category=all&os=web')).start()
+        time.sleep(0.5)
 
-except (KeyboardInterrupt, SystemExit):
-    # Shut down the scheduler when exiting the app
-    scheduler.shutdown()
-
-pushToDiscord('Bot Stopped!','Script Over!' , '')
-pushToMyDiscord('Bot Stopped!','Script Over!' , '')
+    except:
+        pushToDiscord('Bot Stopped!','Script Over!' , '')
+        pushToMyDiscord('Bot Stopped!','Script Over!' , '')
+        break 
