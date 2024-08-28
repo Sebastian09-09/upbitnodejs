@@ -33,6 +33,7 @@ def pushToMyDiscord(title,time,url):
         "username": "Upbit Announcements",
         "embeds": [{
             "title": title,
+            "description": "[ Upbit ]",
             "url": url,
             "color": 234234,
             "footer": {
