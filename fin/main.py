@@ -150,8 +150,7 @@ while True:
         Thread(target=sendRequest, args=(session,'latest','https://api-manager.upbit.com/api/v1/announcements/search?search=ta&page=1&per_page=1&category=all&os=web')).start()
         Thread(target=sendRequest, args=(session,'latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all')).start()
         Thread(target=sendRequest, args=(session,'latest','https://api-manager.upbit.com/api/v1/announcements/search?search=ta&page=1&per_page=1&category=all&os=web')).start()
-        time.sleep(0.5)
-        break 
+        time.sleep(0.5) 
 
     except:
         ##pushToDiscord('Bot Stopped!','Script Over!' , '')
