@@ -123,7 +123,7 @@ def sendRequest(session,category,url):
     #print(f'Response : {res.status_code}\nDelay : {recieved-sent}\nFound : {recieved}')
 
     if res.status_code != 200:
-        ##pushToDiscord('Status Code not 200',res.status_code , url)
+        pushToDiscord('Status Code not 200',res.status_code , url)
         pushToMyDiscord('Status Code not 200',res.status_code , url)
         return 
 
@@ -137,7 +137,7 @@ def sendRequest(session,category,url):
         
     writeLast(latest , category)
 
-    ##pushToDiscord(res.json()['data']['notices'][0]['title'],sentwms+'\n'+recievedwms, url)
+    pushToDiscord(res.json()['data']['notices'][0]['title'],sentwms+'\n'+recievedwms, url)
     pushToMyDiscord(res.json()['data']['notices'][0]['title'],sentwms+'\n'+recievedwms, url)
 
 
@@ -153,6 +153,6 @@ while True:
         time.sleep(0.5) 
 
     except:
-        ##pushToDiscord('Bot Stopped!','Script Over!' , '')
+        pushToDiscord('Bot Stopped!','Script Over!' , '')
         pushToMyDiscord('Bot Stopped!','Script Over!' , '')
         break 
