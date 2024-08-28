@@ -50,6 +50,7 @@ def pushToDiscord(title,time,url):
         "username": "Upbit Announcements",
         "embeds": [{
             "title": title,
+            "description": "[ Upbit ]",
             "url": url,
             "color": 234234,
             "footer": {
@@ -137,8 +138,8 @@ def sendRequest(session,category,url):
         
     writeLast(latest , category)
 
-    pushToDiscord(res.json()['data']['notices'][0]['title'],sentwms+'\n'+recievedwms, url)
-    pushToMyDiscord(res.json()['data']['notices'][0]['title'],sentwms+'\n'+recievedwms, url)
+    pushToDiscord(res.json()['data']['notices'][0]['title'],sentwms+'\n'+recievedwms+'\n'+res.json()['data']['notices'][0]['listed_at'] , url)
+    pushToMyDiscord(res.json()['data']['notices'][0]['title'],sentwms+'\n'+recievedwms+'\n'+res.json()['data']['notices'][0]['listed_at'] , url)
 
 
 # Keep the script running
