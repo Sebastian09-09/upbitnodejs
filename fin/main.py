@@ -28,6 +28,7 @@ def loadProxies():
 
 proxylist = loadProxies()
 proxylistused = set()
+Sessions = [requests.Session(),requests.Session(),requests.Session(),requests.Session(),requests.Session(),requests.Session(),requests.Session(),requests.Session(),requests.Session(),requests.Session()]
 
 Cookies = ['','','','','','','','','','']
 
@@ -74,8 +75,8 @@ latest = loadLast("latest")
 
 #https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all
 def sendRequest(category,url,index):
-    #url += f'&nonce={generate_random_string()}&timeStamp={float(datetime.now().timestamp())}'
-    global proxylist , proxylistused , latest , Cookies
+    url += f'&nonce={index}'
+    global proxylist , proxylistused , latest , Cookies , Sessions
 
     #if len(proxylist) == 0:
     #    proxylist = loadProxies()
@@ -128,14 +129,14 @@ def sendRequest(category,url,index):
 
     #session.cache = None 
 
-    #session.proxies.update(proxies)
-    #  
+    Sessions[index].proxies.update(proxies)
+     
     sent=datetime.now()
-    res=requests.get(url, headers=headers, proxies=proxies)
+    res=requests.get(url, headers=headers)
     recieved=datetime.now()
     
     print(
-        res.headers['CF-Cache-Status']
+        res.headers['CF-Cache-Status'] + f" {index}"
     )
 
     if 'Set-Cookie' in res.headers:
@@ -167,86 +168,14 @@ def sendRequest(category,url,index):
 
 
 
-
-#Scheduler 
-# Create a scheduler instance
-"""
-scheduler = BlockingScheduler()
-
-
-scheduler.add_job(
-sendRequest,
-CronTrigger(second=f'00/10'), 
-args=('latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all',0)
-)
-
-scheduler.add_job(
-sendRequest,
-CronTrigger(second=f'01/10'), 
-args=('latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all',1)
-)
-
-scheduler.add_job(
-sendRequest,
-CronTrigger(second=f'02/10'), 
-args=('latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all',2)
-)
-
-scheduler.add_job(
-sendRequest,
-CronTrigger(second=f'03/10'), 
-args=('latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all',3)
-)
-
-scheduler.add_job(
-sendRequest,
-CronTrigger(second=f'04/10'), 
-args=('latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all',4)
-)
-
-scheduler.add_job(
-sendRequest,
-CronTrigger(second=f'05/10'), 
-args=('latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all',5)
-)
-
-scheduler.add_job(
-sendRequest,
-CronTrigger(second=f'06/10'), 
-args=('latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all',6)
-)
-
-scheduler.add_job(
-sendRequest,
-CronTrigger(second=f'07/10'), 
-args=('latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all',7)
-)
-
-scheduler.add_job(
-sendRequest,
-CronTrigger(second=f'08/10'), 
-args=('latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all',8)
-)
-
-scheduler.add_job(
-sendRequest,
-CronTrigger(second=f'09/10'), 
-args=('latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all',9)
-)
-
-# Start the scheduler
-scheduler.start()
-
-"""
 #Threading 
 # Keep the script running
 while True:
     try:
-        for i in range(0,2):
+        for i in range(0,10):
             Thread(target=sendRequest, args=('latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all' , i)).start()
             time.sleep(1)
-        time.sleep(8)
-
+            
     except:
         pushToDiscord('Bot Stopped!','Script Over!' , '')
         pushToMyDiscord('Bot Stopped!','Script Over!' , '')
