@@ -3,6 +3,13 @@ import requests
 from datetime import datetime 
 import json 
 from threading import Thread 
+import random
+import string
+
+def generate_random_string(length=20):
+    characters = string.ascii_letters + string.digits
+    random_string = ''.join(random.choice(characters) for i in range(length))
+    return random_string
 
 def loadLast(category):
     with open(f'{category}.json','r',encoding='utf-8') as f:
@@ -66,7 +73,7 @@ latest = loadLast("latest")
 #https://api-manager.upbit.com/api/v1/announcements/search?search=ta&page=1&per_page=1&category=all&os=web
 #https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all
 def sendRequest(session,category,url):
-    
+    url += f'&nonce={generate_random_string()}'
     global proxylist , proxylistused , latest 
 
     if len(proxylist) == 0:
@@ -105,7 +112,9 @@ def sendRequest(session,category,url):
         "authority": "api-manager.upbit.com",
         "scheme": "https",
         "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-        "accept-encoding": "gzip"
+        "accept-encoding": "gzip",
+        "Referrer": "upbit.com",
+        "Connection": "close",
     }
 
     proxies = {
@@ -119,6 +128,8 @@ def sendRequest(session,category,url):
     res=session.get(url, headers=headers)
     recieved=datetime.now()
     
+    print(res.headers)
+
     sentwms = sent.strftime('%Y-%m-%d %H:%M:%S') + f'.{sent.strftime('%f')[:3] }'
     recievedwms = recieved.strftime('%Y-%m-%d %H:%M:%S') + f'.{recieved.strftime('%f')[:3] }'
     
@@ -147,12 +158,7 @@ def sendRequest(session,category,url):
 while True:
     try:
         Thread(target=sendRequest, args=(session,'latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all')).start()
-        Thread(target=sendRequest, args=(session,'latest','https://api-manager.upbit.com/api/v1/announcements/search?search=ta&page=1&per_page=1&category=all&os=web')).start()
-        Thread(target=sendRequest, args=(session,'latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all')).start()
-        Thread(target=sendRequest, args=(session,'latest','https://api-manager.upbit.com/api/v1/announcements/search?search=ta&page=1&per_page=1&category=all&os=web')).start()
-        Thread(target=sendRequest, args=(session,'latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all')).start()
-        Thread(target=sendRequest, args=(session,'latest','https://api-manager.upbit.com/api/v1/announcements/search?search=ta&page=1&per_page=1&category=all&os=web')).start()
-        time.sleep(1) 
+        time.sleep(0.5) 
 
     except:
         pushToDiscord('Bot Stopped!','Script Over!' , '')
