@@ -5,8 +5,6 @@ import json
 from threading import Thread 
 import random
 import string
-from apscheduler.schedulers.blocking import BlockingScheduler
-from apscheduler.triggers.cron import CronTrigger
 
 def generate_random_string(length=20):
     characters = string.ascii_letters + string.digits
