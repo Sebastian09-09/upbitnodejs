@@ -136,7 +136,7 @@ def sendRequest(category,url,index):
     Sessions[index].proxies.update(proxies)
      
     sent=datetime.now()
-    res=requests.get(url, headers=headers)
+    res=Sessions[index].get(url, headers=headers)
     recieved=datetime.now()
     
     if 'CF-Cache-Status' in res.headers:
