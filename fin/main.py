@@ -26,9 +26,15 @@ def loadProxies():
 
 proxylist = loadProxies()
 proxylistused = set()
-Sessions = [requests.Session(),requests.Session(),requests.Session(),requests.Session(),requests.Session(),requests.Session(),requests.Session(),requests.Session(),requests.Session(),requests.Session()]
 
-Cookies = ['','','','','','','','','','']
+noOfSessions = 100
+Sessions = []
+Cookies = []
+
+for i in range(0,noOfSessions):
+    Sessions.append(requests.Session())
+    Cookies.append('')
+
 
 with open('webhook.json','r',encoding='utf-8') as f:
     webhookurl = json.load(f)['webhook']
@@ -133,9 +139,8 @@ def sendRequest(category,url,index):
     res=requests.get(url, headers=headers)
     recieved=datetime.now()
     
-    print(
-        res.headers['CF-Cache-Status'] + f" {index}"
-    )
+    if 'CF-Cache-Status' in res.headers:
+        print(res.headers['CF-Cache-Status'] + f" {index}")
 
     if 'Set-Cookie' in res.headers:
         Cookies[index] = res.headers['Set-Cookie'].split(';')[0]
@@ -170,9 +175,9 @@ def sendRequest(category,url,index):
 # Keep the script running
 while True:
     try:
-        for i in range(0,10):
+        for i in range(0,noOfSessions):
             Thread(target=sendRequest, args=('latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all' , i)).start()
-            time.sleep(1)
+            time.sleep(0.5)
             
     except:
         pushToDiscord('Bot Stopped!','Script Over!' , '')
