@@ -134,10 +134,11 @@ def sendRequest(session,category,url):
         catID = i['catalogId']
         catName = i['catalogName']
 
-        if latest[str(catID)] == title:
+        if latest[str(catID)]['title'] == title or latest[str(catID)]['releaseDate'] > i['articles'][0]['releaseDate']:
             continue 
         
-        latest[str(catID)] = title
+        latest[str(catID)]['title'] = title
+        latest[str(catID)]['releaseDate'] = i['articles'][0]['releaseDate']
 
         writeLast(latest, category)
 
