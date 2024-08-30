@@ -122,7 +122,7 @@ def sendRequest(category,url,index):
         "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
         "accept-encoding": "gzip",
         "Referrer": "https://upbit.com/",
-        "Connection": "close",
+        "Connection": "keep-alive",
         "Cookie": Cookies[index]
     }
 
@@ -137,8 +137,7 @@ def sendRequest(category,url,index):
      
     sent=datetime.now()
     res=Sessions[index].get(url, headers=headers)
-    recieved=datetime.now()
-    
+    recieved=datetime.now()    
     if 'CF-Cache-Status' in res.headers:
         print(res.headers['CF-Cache-Status'] + f" {index}")
 
