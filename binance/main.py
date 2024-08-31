@@ -1,4 +1,3 @@
-from bs4 import BeautifulSoup
 import time 
 import requests 
 from datetime import datetime 
@@ -6,6 +5,12 @@ import json
 from threading import Thread 
 import random
 import string
+from bs4 import BeautifulSoup
+
+def generate_random_string(length=20):
+    characters = string.ascii_letters + string.digits
+    random_string = ''.join(random.choice(characters) for i in range(length))
+    return random_string
 
 def loadLast(category):
     with open(f'{category}.json','r',encoding='utf-8') as f:
@@ -17,21 +22,23 @@ def writeLast(data, category):
 
 def loadProxies():
     with open('proxies.txt','r',encoding='utf-8') as f:
-        return set([ i.strip() for i in f.readlines() ])
-
-def generate_random_string(length=20):
-    characters = string.ascii_letters + string.digits
-    random_string = ''.join(random.choice(characters) for i in range(length))
-    return random_string
+        return [ i.strip() for i in f.readlines() ]
 
 
 proxylist = loadProxies()
 proxylistused = set()
 
+noOfSessions = 100
+Sessions = []
+Cookies = []
+
+for i in range(0,noOfSessions):
+    Sessions.append(requests.Session())
+    Cookies.append('')
+
+
 with open('webhook.json','r',encoding='utf-8') as f:
     webhookurl = json.load(f)['webhook']
-
-session = requests.Session()
 
 def pushToMyDiscord(title,desc,time,url):
     headers= {
@@ -43,7 +50,7 @@ def pushToMyDiscord(title,desc,time,url):
             "title": title,
             "description": f"[ Binance | {desc} ]",
             "url": url,
-            "color": 16705372,
+            "color": 16776960,
             "footer": {
                 "text": time
             }
@@ -61,7 +68,7 @@ def pushToDiscord(title,desc,time,url):
             "title": title,
             "description": f"[ Binance | {desc} ]",
             "url": url,
-            "color": 16705372,
+            "color": 16776960,
             "footer": {
                 "text": time
             }
@@ -69,31 +76,23 @@ def pushToDiscord(title,desc,time,url):
     }
     requests.post(webhookurl,headers=headers,json=payload)
 
-latest = loadLast("latest") 
+latest = loadLast("latest")
 
-def sendRequest(session,category,url):
-    url += f'&nonce={generate_random_string()}'
+def sendRequest(category,url,index):
+    url += f'&nonce={index}&email={generate_random_string()}'
     global proxylist , proxylistused , latest 
 
-    if len(proxylist) == 0:
-        proxylist = loadProxies()
-        proxylistused = set()
+    proxy = list(proxylist)[index]
 
-    proxy = list(proxylist)[0]
-
-    if proxy not in proxylistused:
-        proxylistused.add(proxy)
-
-    if proxy in proxylist:
-        proxylist.remove(proxy)
-    
-    print(datetime.now(),url,proxy)
+    print(datetime.now(),proxy,index)
 
     headers = {
+        "X-Buster": generate_random_string(),
+        "X-Nonce": str(index),
         "Referer": "https://binance.com/",
         "Accept-language": "en-US,en;q=0.5",
         "Accept-Encoding": "gzip",
-        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Cache-Control": "max-age=0, no-cache, no-store, must-revalidate",
         "Pragma": "no-cache",
         "Expires": "0",
         "priority": "u=0, i",
@@ -101,7 +100,7 @@ def sendRequest(session,category,url):
         "authority": "www.binance.com",
         "scheme": "https",
         "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-        "accept-encoding": "gzip"
+        "accept-encoding": "gzip",
     }
 
     proxies = {
@@ -109,16 +108,18 @@ def sendRequest(session,category,url):
         'https': proxy,
     }
 
-    session.cache = None 
-    session.proxies.update(proxies) 
+    Sessions[index].cache = None 
+    Sessions[index].proxies.update(proxies) 
     sent=datetime.now()
-    res=session.get(url, headers=headers)
+    res=Sessions[index].get(url, headers=headers)
     recieved=datetime.now()
     
     sentwms = sent.strftime('%Y-%m-%d %H:%M:%S') + f'.{sent.strftime('%f')[:3] }'
     recievedwms = recieved.strftime('%Y-%m-%d %H:%M:%S') + f'.{recieved.strftime('%f')[:3] }'
     
     #print(f'Response : {res.status_code}\nDelay : {recieved-sent}\nFound : {recieved}')
+
+    print(res.headers['X-Cache-Date'],end=f' {index}\n')
 
     if res.status_code != 200:
         Thread(target=pushToDiscord , args=(title,'',sentwms+'\n'+recievedwms+'\n'+date , '')).start()
@@ -147,13 +148,15 @@ def sendRequest(session,category,url):
         Thread(target=pushToMyDiscord , args=(title,catName,sentwms+'\n'+recievedwms+'\n'+date , '')).start()
 
 
+#Threading 
 # Keep the script running
 while True:
     try:
-        Thread(target=sendRequest, args=(session,'latest','https://www.binance.com/en/support/announcement/new-cryptocurrency-listing?c=48&navId=48&hl=en')).start()
-        time.sleep(1) 
-
+        for i in range(0,noOfSessions):
+            Thread(target=sendRequest, args=('latest','https://www.binance.com/en/support/announcement/new-cryptocurrency-listing?c=48&navId=48&hl=en' , i)).start()
+            time.sleep(1.3)
+            
     except:
         pushToDiscord('Bot Stopped!', '','Script Over!' , '')
-        pushToMyDiscord('Bot Stopped!','', 'Script Over!' , '')
+        pushToMyDiscord('Bot Stopped!', '','Script Over!' , '')
         break 

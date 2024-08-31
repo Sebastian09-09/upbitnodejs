@@ -79,7 +79,7 @@ latest = loadLast("latest")
 
 #https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all
 def sendRequest(category,url,index):
-    url += f'&nonce={index}'
+    url = f'https://api-manager.upbit.com/api/v1/announcements.v{index}?os=web&page=1&per_page=1&category=all&nonce={index}'
     global proxylist , proxylistused , latest , Cookies , Sessions
 
     #if len(proxylist) == 0:
@@ -99,7 +99,7 @@ def sendRequest(category,url,index):
     #print(proxy)
 
     headers = {
-        "X-Cache-Buster": generate_random_string(),
+        "X-Nonce": str(index),
         "Accept-language": "en-US,en;q=0.5",
         "origin": "https://upbit.com", 
         "Accept-Encoding": "gzip",
@@ -138,10 +138,13 @@ def sendRequest(category,url,index):
     sent=datetime.now()
     res=Sessions[index].get(url, headers=headers)
     recieved=datetime.now()    
+
     if 'CF-Cache-Status' in res.headers:
         print(res.headers['CF-Cache-Status'] + f" {index}")
+        if res.headers['CF-Cache-Status'] == 'HIT':
+            return 
 
-    if 'Set-Cookie' in res.headers:
+    if 'Set-Cookie' in res.headers and Cookies[index] == '':
         Cookies[index] = res.headers['Set-Cookie'].split(';')[0]
     
     sentwms = sent.strftime('%Y-%m-%d %H:%M:%S') + f'.{sent.strftime('%f')[:3] }'
@@ -176,7 +179,11 @@ while True:
     try:
         for i in range(0,noOfSessions):
             Thread(target=sendRequest, args=('latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all' , i)).start()
-            time.sleep(0.5)
+            Thread(target=sendRequest, args=('latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all' , i)).start()
+            Thread(target=sendRequest, args=('latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all' , i)).start()
+            Thread(target=sendRequest, args=('latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all' , i)).start()
+            Thread(target=sendRequest, args=('latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all' , i)).start()
+            time.sleep(0.2)
             
     except:
         pushToDiscord('Bot Stopped!','Script Over!' , '')
