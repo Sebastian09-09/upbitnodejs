@@ -188,11 +188,11 @@ while True:
     try:
         for i in range(0,noOfSessions):
             Thread(target=sendRequest, args=('latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all' , i)).start()
-            Thread(target=sendRequest, args=('latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all' , i)).start()
-            Thread(target=sendRequest, args=('latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all' , i)).start()
-            Thread(target=sendRequest, args=('latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all' , i)).start()
-            Thread(target=sendRequest, args=('latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all' , i)).start()
-            time.sleep(0.2)
+            #Thread(target=sendRequest, args=('latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all' , i)).start()
+            #Thread(target=sendRequest, args=('latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all' , i)).start()
+            #Thread(target=sendRequest, args=('latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all' , i)).start()
+            #Thread(target=sendRequest, args=('latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all' , i)).start()
+            time.sleep(1)
             
     except:
         pushToDiscord('Bot Stopped!','Script Over!' , '')
