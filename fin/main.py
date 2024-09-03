@@ -82,7 +82,7 @@ latest = loadLast("latest")
 
 #https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all
 def sendRequest(category,url,index):
-    url = f'https://api-manager.upbit.com/api/v1/announcements.v{index}?os=web&page=1&per_page=1&category=all&nonce={index}&buster={generate_random_string()}'
+    url = f'https://api-manager.upbit.com/api/v1/announcements.v{index}?os=web&page=1&per_page=1&category=all&nonce={index}'
     global proxylist , proxylistused , latest , Cookies , Sessions , Etag 
 
     #if len(proxylist) == 0:
