@@ -27,7 +27,7 @@ def loadProxies():
 proxylist = loadProxies()
 proxylistused = set()
 
-noOfSessions = 300
+noOfSessions = 301
 Sessions = []
 Cookies = []
 Etag = []
@@ -192,7 +192,7 @@ while True:
             #Thread(target=sendRequest, args=('latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all' , i)).start()
             #Thread(target=sendRequest, args=('latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all' , i)).start()
             #Thread(target=sendRequest, args=('latest','https://api-manager.upbit.com/api/v1/announcements?os=web&page=1&per_page=1&category=all' , i)).start()
-            time.sleep(1)
+            time.sleep(0.5)
             
     except:
         pushToDiscord('Bot Stopped!','Script Over!' , '')
